@@ -218,11 +218,13 @@ class JobtasticTask(Task):
                 'Found existing cached and completed task: %s', task_id)
             return self.AsyncResult(task_id)
 
-        # Check for an in-progress equivalent task to avoid duplicating work
-        task_id = self.cache.get('herd:%s' % cache_key)
-        if task_id:
-            logging.info('Found existing in-progress task: %s', task_id)
-            return self.AsyncResult(task_id)
+        # Ensure that this is a new task, and not a retry
+        if not self.request.id:
+            # Check for an in-progress equivalent task to avoid duplicating work
+            task_id = self.cache.get('herd:%s' % cache_key)
+            if task_id:
+                logging.info('Found existing in-progress task: %s', task_id)
+                return self.AsyncResult(task_id)
 
         # It's not cached and it's not already running. Use an atomic lock to
         # start the task, ensuring there isn't a race condition that could
