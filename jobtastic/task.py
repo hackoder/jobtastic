@@ -20,7 +20,7 @@ try:  # Celery 4
     from celery.local import class_property
 except ImportError:  # Celery 3
     from celery.five import class_property
-from celery.states import PENDING, SUCCESS
+from celery.states import PENDING, SUCCESS, RETRY
 from celery.task import Task
 from celery.utils import gen_unique_id
 from jobtastic.cache import get_cache
@@ -308,7 +308,7 @@ class JobtasticTask(Task):
             time_remaining)
         if self.request.id:
             self._last_update_count = completed_count
-            self.update_state(None, self.state, {
+            self.update_state(None, PROGRESS, {
                 "progress_percent": progress_percent,
                 "time_remaining": time_remaining,
             })
@@ -331,7 +331,7 @@ class JobtasticTask(Task):
 
         # Report to the backend that work has been started.
         if self.request.id:
-            self.update_state(None, PROGRESS if self.request.retries == 0 else self.state, {
+            self.update_state(None, PROGRESS if self.request.retries == 0 else RETRY, {
                 "progress_percent": 0,
                 "time_remaining": -1,
             })
