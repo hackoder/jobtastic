@@ -220,7 +220,8 @@ class JobtasticTask(Task):
 
         # Ensure that this is a new task, and not a retry
         if not self.request.id:
-            # Check for an in-progress equivalent task to avoid duplicating work
+            # Check for an in-progress equivalent task to avoid duplicating
+            # work
             task_id = self.cache.get('herd:%s' % cache_key)
             if task_id:
                 logging.info('Found existing in-progress task: %s', task_id)
@@ -307,7 +308,7 @@ class JobtasticTask(Task):
             time_remaining)
         if self.request.id:
             self._last_update_count = completed_count
-            self.update_state(None, PROGRESS, {
+            self.update_state(None, self.state, {
                 "progress_percent": progress_percent,
                 "time_remaining": time_remaining,
             })
@@ -330,7 +331,7 @@ class JobtasticTask(Task):
 
         # Report to the backend that work has been started.
         if self.request.id:
-            self.update_state(None, PROGRESS, {
+            self.update_state(None, PROGRESS if self.request.retries == 0 else self.state, {
                 "progress_percent": 0,
                 "time_remaining": -1,
             })
