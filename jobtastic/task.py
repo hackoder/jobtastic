@@ -330,8 +330,8 @@ class JobtasticTask(Task):
         self._last_update_count = 0
 
         # Report to the backend that work has been started.
-        if self.request.id:
-            self.update_state(None, PROGRESS if self.request.retries == 0 else RETRY, {
+        if self.request.id and self.request.retries == 0:
+            self.update_state(None, PROGRESS, {
                 "progress_percent": 0,
                 "time_remaining": -1,
             })
